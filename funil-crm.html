@@ -1,0 +1,393 @@
+<title>Funil CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra superior com abas (Pipeline, Leads, Follow-ups); quadro kanban com rolagem horizontal; detalhe do lead em painel lateral. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --surface-2:#eaeef2; --ink:#14202b; --ink-2:#55646f; --ink-3:#8896a1;
+  --line:#dbe1e7; --line-2:#c6cfd7; --accent:#0a6c8f; --accent-ink:#ffffff; --accent-soft:#dff0f6;
+  --danger:#b3261e; --danger-soft:#fbe4e2; --ok:#1d7a46; --ok-soft:#dff3e6;
+  --font:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Bricolage Grotesque","Figtree",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1419; --surface:#161e26; --surface-2:#1e2831; --ink:#e7edf2; --ink-2:#a2b0bb; --ink-3:#74838f;
+  --line:#26323d; --line-2:#364553; --accent:#4cc2e4; --accent-ink:#06222c; --accent-soft:#12303b;
+  --danger:#ff8d84; --danger-soft:#3a1d1b; --ok:#6fd49a; --ok-soft:#173025; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1419; --surface:#161e26; --surface-2:#1e2831; --ink:#e7edf2; --ink-2:#a2b0bb; --ink-3:#74838f;
+  --line:#26323d; --line-2:#364553; --accent:#4cc2e4; --accent-ink:#06222c; --accent-soft:#12303b;
+  --danger:#ff8d84; --danger-soft:#3a1d1b; --ok:#6fd49a; --ok-soft:#173025; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:14px 40px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:14px}
+.brand{font-family:var(--display);font-size:22px;letter-spacing:-.01em;margin-right:6px}
+.tabs{display:flex;gap:2px;background:var(--surface-2);padding:3px;border-radius:9px}
+.tab{border:0;background:transparent;padding:6px 12px;border-radius:7px;color:var(--ink-2);font-weight:500;display:flex;gap:6px;align-items:center}
+.tab[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.tab .n{font-size:11px;background:var(--danger-soft);color:var(--danger);padding:0 6px;border-radius:9px}
+.sp{flex:1}
+.search{min-width:0;width:200px;max-width:100%}
+input,select,textarea{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;min-height:36px;width:100%;min-width:0}
+input[type=color]{padding:2px;width:40px;flex:none}
+input[type=checkbox]{width:18px;min-height:18px;accent-color:var(--accent);flex:none}
+textarea{resize:vertical;min-height:70px}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 12px;min-height:36px;font-weight:500;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{min-height:30px;padding:3px 8px}
+.btn.danger{color:var(--danger)}
+.stats{color:var(--ink-2);font-size:13px;margin:0 0 12px}
+.board{display:flex;gap:12px;overflow-x:auto;align-items:flex-start;padding-bottom:14px}
+.col{flex:0 0 272px;background:var(--surface-2);border-radius:12px;padding:10px;border-top:3px solid var(--c,var(--ink-3));min-height:120px}
+.col.over{outline:2px dashed var(--accent);outline-offset:-4px}
+.ch{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:600}
+.ch .cnt{color:var(--ink-3);font-weight:500}
+.ch .add{margin-left:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:grab}
+.card:hover{border-color:var(--line-2)}
+.card.drag{opacity:.35}
+.card .nm{font-weight:600;overflow-wrap:anywhere}
+.card .sub{color:var(--ink-2);font-size:13px;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:12px;padding:1px 8px;border-radius:9px;background:var(--surface-2);color:var(--ink-2)}
+.tag.late{background:var(--danger-soft);color:var(--danger)}
+.tag.today{background:var(--accent-soft);color:var(--accent)}
+.empty{color:var(--ink-3);font-size:13px;padding:6px 2px}
+.hero{background:var(--surface);border:1px dashed var(--line-2);border-radius:12px;padding:28px 20px;text-align:center;max-width:520px;margin:30px auto}
+.hero h2{font-family:var(--display);font-size:20px;margin:0 0 6px}
+.hero p{margin:0 0 14px;color:var(--ink-2)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}
+th{font-size:12px;color:var(--ink-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:var(--c)}
+.grp{margin-bottom:22px}
+.grp h3{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px;font-weight:600}
+.grp h3.late{color:var(--danger)}
+.trow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:6px}
+.trow .tt{flex:1;min-width:0;overflow-wrap:anywhere}
+.trow .ld{color:var(--accent);background:none;border:0;padding:0;font-weight:500;text-align:left}
+.trow.done .tt{text-decoration:line-through;color:var(--ink-3)}
+#scrim{position:fixed;inset:0;background:rgba(5,10,15,.45);z-index:20}
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(500px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:21;overflow-y:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ph h2{font-family:var(--display);font-size:20px;margin:0;flex:1;min-width:0;overflow-wrap:anywhere}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.fg label,.lbl{display:block;font-size:12px;color:var(--ink-2);margin-bottom:4px;font-weight:500}
+.sec{border-top:1px solid var(--line);margin-top:20px;padding-top:14px}
+.sec h3{font-size:14px;margin:0 0 10px}
+.inline{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.inline>*{min-width:0}
+.note{border-left:2px solid var(--line-2);padding:2px 0 2px 12px;margin-bottom:12px;overflow-wrap:anywhere;white-space:pre-wrap}
+.note time{display:block;font-size:12px;color:var(--ink-3)}
+.srow{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.msg{color:var(--danger);font-size:13px;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line-2);border-radius:16px;padding:2px 4px 2px 12px}
+.chip button{border:0;background:none;padding:2px 6px;color:var(--ink-3)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:40;max-width:90%}
+.ro .w{display:none!important}
+.ro .card{cursor:pointer}
+@media (max-width:560px){.search{width:100%;order:9}.brand{flex:1}.col{flex-basis:84%}}
+@media (prefers-reduced-motion:no-preference){.card,.btn{transition:border-color .12s}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <div class="brand">Funil</div>
+    <nav class="tabs" role="tablist" aria-label="Visões">
+      <button class="tab" role="tab" data-view="board">Pipeline</button>
+      <button class="tab" role="tab" data-view="table">Leads</button>
+      <button class="tab" role="tab" data-view="tasks">Follow-ups <span class="n" id="late-n" hidden></span></button>
+    </nav>
+    <span class="sp"></span>
+    <input id="q" class="search" type="search" placeholder="Buscar por nome ou empresa" aria-label="Buscar lead">
+    <button class="btn ghost w" data-act="stages">Estágios</button>
+    <button class="btn ghost w" data-act="sources">Origens</button>
+    <button class="btn pri w" data-act="new">+ Novo lead</button>
+  </header>
+  <p class="stats" id="stats">Carregando…</p>
+  <main id="main"></main>
+</div>
+<div id="scrim" hidden></div>
+<aside id="panel" hidden aria-label="Painel"></aside>
+<div id="toast" hidden role="status"></div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>ymd(new Date());
+const plusDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return ymd(d)};
+const dayDiff=s=>{const [y,m,d]=s.split('-').map(Number);const a=new Date(y,m-1,d),b=new Date();b.setHours(0,0,0,0);return Math.round((a-b)/864e5)};
+const dlabel=s=>{const n=dayDiff(s);if(n<0)return n===-1?'ontem':'há '+(-n)+' dias';if(n===0)return 'hoje';if(n===1)return 'amanhã';const p=s.split('-');return p[2]+'/'+p[1]};
+const tstamp=t=>new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const byPos=(a,b)=>(a.pos||0)-(b.pos||0);
+
+let db=null,canWrite=true,drag=null,dirty=false,confirmDel=false,msg='';
+const S={stages:[],sources:[],leads:[],ready:{stages:false,sources:false,leads:false}};
+const ui={view:'board',q:'',panel:null};
+try{const v=localStorage.getItem('funil-view');if(v)ui.view=v}catch(e){}
+
+const DEFAULT_STAGES=[['Novo','#64748b','open'],['Contato','#3b82f6','open'],['Proposta','#f59e0b','open'],['Negociação','#8b5cf6','open'],['Ganho','#22c55e','won'],['Perdido','#ef4444','lost']];
+const DEFAULT_SOURCES=['Indicação','Site','Instagram','LinkedIn','Evento','Outro'];
+
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,3500)}
+const errText=e=>({quota_exceeded:'Limite de dados atingido.',resource_exhausted:'Muitas operações seguidas. Aguarde um instante.',unavailable:'Serviço indisponível. Tente de novo.',invalid_argument:'Você não tem permissão para alterar isso.',revoked:'Seu acesso a esta página mudou.'}[e&&e.code]||'Não foi possível salvar.');
+let chain=Promise.resolve();
+function run(fn){chain=chain.then(fn).catch(e=>toast(errText(e)));return chain}
+const col=n=>db.collection(n);
+
+const stageById=id=>S.stages.find(s=>s.id===id);
+const leadById=id=>S.leads.find(l=>l.id===id);
+const pendingTasks=l=>(l.tasks||[]).filter(t=>!t.done);
+const dueCount=l=>pendingTasks(l).filter(t=>t.remind<=today()).length;
+const matches=l=>{const q=ui.q.trim().toLowerCase();return !q||[l.name,l.company,l.contact,l.source].some(v=>String(v||'').toLowerCase().includes(q))};
+
+/* ---------- ações (gravam no banco) ---------- */
+const A={
+  addLead(d){const list=S.leads.filter(l=>l.stageId===d.stageId);const pos=(list.length?Math.max(...list.map(l=>l.pos||0)):0)+1000;
+    return run(()=>col('leads').add({name:d.name,company:d.company,contact:d.contact,source:d.source,stageId:d.stageId,pos,notes:[],tasks:[],createdAt:Date.now()}))},
+  patchLead(id,p){return run(()=>col('leads').doc(id).update(p))},
+  delLead(id){return run(()=>col('leads').doc(id).delete())},
+  addNote(id,text){return run(()=>{const l=leadById(id);if(!l)return;return col('leads').doc(id).update({notes:[...(l.notes||[]),{id:uid(),t:Date.now(),text}]})})},
+  addTask(id,title,remind){return run(()=>{const l=leadById(id);if(!l)return;return col('leads').doc(id).update({tasks:[...(l.tasks||[]),{id:uid(),title,remind,done:false}]})})},
+  toggleTask(id,tid,done){return run(()=>{const l=leadById(id);if(!l)return;return col('leads').doc(id).update({tasks:(l.tasks||[]).map(t=>t.id===tid?{...t,done,doneAt:done?Date.now():null}:t)})})},
+  delTask(id,tid){return run(()=>{const l=leadById(id);if(!l)return;return col('leads').doc(id).update({tasks:(l.tasks||[]).filter(t=>t.id!==tid)})})},
+  addStage(name){const pos=(S.stages.length?Math.max(...S.stages.map(s=>s.pos||0)):0)+1000;return run(()=>col('stages').add({name,color:'#0ea5e9',kind:'open',pos}))},
+  patchStage(id,p){return run(()=>col('stages').doc(id).update(p))},
+  swapStages(a,b){return run(async()=>{await col('stages').doc(a.id).update({pos:b.pos});await col('stages').doc(b.id).update({pos:a.pos})})},
+  delStage(id){return run(()=>col('stages').doc(id).delete())},
+  addSource(name){return run(()=>col('sources').add({name}))},
+  delSource(s){return run(async()=>{await col('sources').doc(s.id).delete();for(const l of S.leads.filter(x=>x.source===s.name))await col('leads').doc(l.id).update({source:''})})},
+  seed(){return run(async()=>{let i=1;for(const [name,color,kind] of DEFAULT_STAGES)await col('stages').add({name,color,kind,pos:i++*1000});
+    if(!S.sources.length)for(const name of DEFAULT_SOURCES)await col('sources').add({name})})}
+};
+
+/* ---------- renderização ---------- */
+let rq=0;
+function render(){if(drag){dirty=true;return}cancelAnimationFrame(rq);rq=requestAnimationFrame(draw)}
+function draw(){
+  dirty=false;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===ui.view)));
+  $('#app').classList.toggle('ro',!canWrite);
+  const late=S.leads.reduce((a,l)=>a+dueCount(l),0);
+  const ln=$('#late-n');ln.hidden=!late;ln.textContent=late;
+  const ready=S.ready.stages&&S.ready.leads;
+  $('#stats').textContent=ready?`${S.leads.length} lead${S.leads.length===1?'':'s'} · ${late} follow-up${late===1?'':'s'} para hoje ou atrasado${late===1?'':'s'}`:'Carregando…';
+  const m=$('#main');
+  if(!ready){m.innerHTML='';}
+  else if(!S.stages.length){m.innerHTML=`<div class="hero"><h2>Monte seu funil</h2><p>Crie os estágios padrão (Novo, Contato, Proposta, Negociação, Ganho e Perdido). Você pode renomear, reordenar e adicionar outros depois.</p>${canWrite?'<button class="btn pri" data-act="seed">Criar estágios padrão</button>':''}</div>`}
+  else if(ui.view==='board')m.innerHTML=boardHTML();
+  else if(ui.view==='table')m.innerHTML=tableHTML();
+  else m.innerHTML=tasksHTML();
+  drawPanel();
+}
+function cardHTML(l){
+  const n=dueCount(l),p=pendingTasks(l).length;
+  return `<div class="card" ${canWrite?'draggable="true"':''} data-id="${l.id}"><div class="nm">${esc(l.name)}</div>`+
+  (l.company?`<div class="sub">${esc(l.company)}</div>`:'')+
+  `<div class="meta">${l.source?`<span class="tag">${esc(l.source)}</span>`:''}${n?`<span class="tag late">${n} follow-up${n>1?'s':''} pendente${n>1?'s':''}</span>`:p?`<span class="tag">${p} agendado${p>1?'s':''}</span>`:''}</div></div>`;
+}
+function boardHTML(){
+  return `<div class="board">`+S.stages.slice().sort(byPos).map(s=>{
+    const all=S.leads.filter(l=>l.stageId===s.id).sort(byPos);
+    const ls=all.filter(matches);
+    return `<section class="col" data-stage="${s.id}" style="--c:${esc(s.color)}"><div class="ch"><span>${esc(s.name)}</span><span class="cnt">${all.length}</span><button class="btn ghost sm add w" data-act="new" data-stage="${s.id}" aria-label="Novo lead em ${esc(s.name)}">+</button></div>`+
+    (ls.length?ls.map(cardHTML).join(''):`<div class="empty">${all.length?'Nenhum resultado.':'Arraste um lead para cá.'}</div>`)+`</section>`;
+  }).join('')+`</div>`;
+}
+function tableHTML(){
+  const ls=S.leads.filter(matches).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  if(!ls.length)return `<div class="hero"><h2>${S.leads.length?'Nada encontrado':'Nenhum lead ainda'}</h2><p>${S.leads.length?'Ajuste a busca.':'Cadastre o primeiro lead para começar o funil.'}</p>${canWrite&&!S.leads.length?'<button class="btn pri" data-act="new">Novo lead</button>':''}</div>`;
+  return `<div class="tablewrap"><table><thead><tr><th>Nome</th><th>Empresa</th><th>Contato</th><th>Origem</th><th>Estágio</th><th>Follow-ups</th></tr></thead><tbody>`+
+  ls.map(l=>{const s=stageById(l.stageId),n=dueCount(l),p=pendingTasks(l).length;
+    return `<tr data-id="${l.id}"><td><strong>${esc(l.name)}</strong></td><td>${esc(l.company)}</td><td>${esc(l.contact)}</td><td>${esc(l.source)}</td><td>${s?`<span class="dot" style="--c:${esc(s.color)}"></span>${esc(s.name)}`:'—'}</td><td>${n?`<span class="tag late">${n} para hoje/atrasado</span>`:p?`<span class="tag">${p} agendado${p>1?'s':''}</span>`:'<span class="empty">—</span>'}</td></tr>`}).join('')+`</tbody></table></div>`;
+}
+function tasksHTML(){
+  const rows=[];S.leads.forEach(l=>(l.tasks||[]).forEach(t=>rows.push({l,t})));
+  const vis=rows.filter(r=>matches(r.l));
+  const pend=vis.filter(r=>!r.t.done).sort((a,b)=>a.t.remind.localeCompare(b.t.remind));
+  const done=vis.filter(r=>r.t.done).sort((a,b)=>(b.t.doneAt||0)-(a.t.doneAt||0)).slice(0,8);
+  const T=today();
+  const groups=[['Atrasadas',pend.filter(r=>r.t.remind<T),'late'],['Hoje',pend.filter(r=>r.t.remind===T),''],['Próximas',pend.filter(r=>r.t.remind>T),''],['Concluídas recentes',done,'']];
+  const row=r=>`<div class="trow${r.t.done?' done':''}"><input type="checkbox" data-task="${r.t.id}" data-lead="${r.l.id}" ${r.t.done?'checked':''} ${canWrite?'':'disabled'} aria-label="Concluir ${esc(r.t.title)}"><div class="tt">${esc(r.t.title)}<br><button class="ld" data-open="${r.l.id}">${esc(r.l.name)}${r.l.company?' · '+esc(r.l.company):''}</button></div><span class="tag ${!r.t.done&&r.t.remind<T?'late':!r.t.done&&r.t.remind===T?'today':''}">${esc(dlabel(r.t.remind))}</span></div>`;
+  const html=groups.filter(g=>g[1].length).map(g=>`<div class="grp"><h3 class="${g[2]}">${g[0]} · ${g[1].length}</h3>${g[1].map(row).join('')}</div>`).join('');
+  return html||`<div class="hero"><h2>Nenhum follow-up</h2><p>Abra um lead e agende o próximo contato com uma data de lembrete.</p></div>`;
+}
+
+function srcOpts(v){return '<option value="">Sem origem</option>'+S.sources.map(s=>s.name).sort().map(n=>`<option ${n===v?'selected':''}>${esc(n)}</option>`).join('')+(v&&!S.sources.some(s=>s.name===v)?`<option selected>${esc(v)}</option>`:'')}
+function stgOpts(v){return S.stages.slice().sort(byPos).map(s=>`<option value="${s.id}" ${s.id===v?'selected':''}>${esc(s.name)}</option>`).join('')}
+
+let lastSig='';
+function drawPanel(){
+  const p=ui.panel,el=$('#panel'),sc=$('#scrim');
+  if(!p){el.hidden=true;sc.hidden=true;lastSig='';return}
+  let html='',sig='';
+  const dis=canWrite?'':'disabled';
+  if(p.kind==='lead'){
+    const l=leadById(p.id);
+    if(!l){ui.panel=null;return drawPanel()}
+    sig='lead'+JSON.stringify(l)+JSON.stringify(S.stages)+JSON.stringify(S.sources)+confirmDel+canWrite;
+    const notes=(l.notes||[]).slice().sort((a,b)=>b.t-a.t);
+    const tasks=(l.tasks||[]).slice().sort((a,b)=>(a.done-b.done)||a.remind.localeCompare(b.remind));
+    html=`<div class="ph"><h2>${esc(l.name)}</h2><button class="btn ghost sm" data-act="close" aria-label="Fechar">Fechar</button></div>
+    <div class="fg">
+      <div><label for="f-name">Nome</label><input id="f-name" data-f="name" value="${esc(l.name)}" ${dis}></div>
+      <div><label for="f-company">Empresa</label><input id="f-company" data-f="company" value="${esc(l.company)}" ${dis}></div>
+      <div><label for="f-contact">Contato</label><input id="f-contact" data-f="contact" value="${esc(l.contact)}" placeholder="e-mail ou telefone" ${dis}></div>
+      <div><label for="f-source">Origem</label><select id="f-source" data-f="source" ${dis}>${srcOpts(l.source)}</select></div>
+      <div><label for="f-stage">Estágio</label><select id="f-stage" data-f="stageId" ${dis}>${stgOpts(l.stageId)}</select></div>
+    </div>
+    <div class="sec"><h3>Notas</h3>
+      <div class="w"><textarea id="note-in" data-keep placeholder="O que aconteceu neste contato?"></textarea><div style="margin-top:8px"><button class="btn pri sm" data-act="note-add">Salvar nota</button></div></div>
+      <div style="margin-top:14px">${notes.length?notes.map(n=>`<div class="note">${esc(n.text)}<time>${tstamp(n.t)}</time></div>`).join(''):'<div class="empty">Nenhuma nota ainda.</div>'}</div>
+    </div>
+    <div class="sec"><h3>Follow-ups</h3>
+      <div class="inline w"><input id="task-in" data-keep placeholder="Ex.: ligar para fechar"><input id="task-d" data-keep type="date" value="${plusDays(1)}" style="width:150px;flex:none"><button class="btn pri sm" data-act="task-add">Agendar</button></div>
+      ${tasks.length?tasks.map(t=>`<div class="trow${t.done?' done':''}"><input type="checkbox" data-task="${t.id}" data-lead="${l.id}" ${t.done?'checked':''} ${dis} aria-label="Concluir ${esc(t.title)}"><div class="tt">${esc(t.title)}</div><span class="tag ${!t.done&&t.remind<today()?'late':!t.done&&t.remind===today()?'today':''}">${esc(dlabel(t.remind))}</span><button class="btn ghost sm w" data-act="task-del" data-tid="${t.id}" aria-label="Excluir follow-up">×</button></div>`).join(''):'<div class="empty">Nenhum follow-up agendado.</div>'}
+    </div>
+    <div class="sec w">${confirmDel?`<p class="msg">Excluir este lead apaga também as notas e os follow-ups.</p><button class="btn danger" data-act="lead-del-ok">Confirmar exclusão</button> <button class="btn ghost" data-act="lead-del-cancel">Cancelar</button>`:`<button class="btn ghost danger" data-act="lead-del">Excluir lead</button>`}</div>`;
+  }else if(p.kind==='new'){
+    sig='new'+JSON.stringify(S.stages)+JSON.stringify(S.sources)+msg;
+    html=`<div class="ph"><h2>Novo lead</h2><button class="btn ghost sm" data-act="close">Fechar</button></div>
+    <div class="fg">
+      <div><label for="n-name">Nome</label><input id="n-name" data-keep></div>
+      <div><label for="n-co">Empresa</label><input id="n-co" data-keep></div>
+      <div><label for="n-ct">Contato</label><input id="n-ct" data-keep placeholder="e-mail ou telefone"></div>
+      <div><label for="n-src">Origem</label><select id="n-src" data-keep>${srcOpts('')}</select></div>
+      <div><label for="n-stg">Estágio</label><select id="n-stg" data-keep>${stgOpts(p.stageId||(S.stages.slice().sort(byPos)[0]||{}).id)}</select></div>
+    </div>
+    ${msg?`<p class="msg" style="margin-top:12px">${esc(msg)}</p>`:''}
+    <div style="margin-top:16px"><button class="btn pri" data-act="save-new">Salvar lead</button></div>`;
+  }else if(p.kind==='stages'){
+    const st=S.stages.slice().sort(byPos);
+    sig='stages'+JSON.stringify(st)+msg;
+    html=`<div class="ph"><h2>Estágios do pipeline</h2><button class="btn ghost sm" data-act="close">Fechar</button></div>
+    ${st.map((s,i)=>`<div class="srow"><input type="color" data-sc="${s.id}" value="${esc(s.color)}" aria-label="Cor de ${esc(s.name)}"><input data-sn="${s.id}" value="${esc(s.name)}" aria-label="Nome do estágio"><button class="btn ghost sm" data-act="st-up" data-id="${s.id}" ${i===0?'disabled':''} aria-label="Mover para a esquerda">←</button><button class="btn ghost sm" data-act="st-down" data-id="${s.id}" ${i===st.length-1?'disabled':''} aria-label="Mover para a direita">→</button><button class="btn ghost sm danger" data-act="st-del" data-id="${s.id}" aria-label="Excluir estágio">×</button></div>`).join('')}
+    ${msg?`<p class="msg">${esc(msg)}</p>`:''}
+    <div class="inline" style="margin-top:14px"><input id="st-new" data-keep placeholder="Novo estágio"><button class="btn pri" data-act="st-add">Adicionar</button></div>`;
+  }else if(p.kind==='sources'){
+    sig='sources'+JSON.stringify(S.sources);
+    html=`<div class="ph"><h2>Origens dos leads</h2><button class="btn ghost sm" data-act="close">Fechar</button></div>
+    <div class="chips">${S.sources.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`<span class="chip">${esc(s.name)}<button data-act="src-del" data-id="${s.id}" aria-label="Remover ${esc(s.name)}">×</button></span>`).join('')||'<span class="empty">Nenhuma origem.</span>'}</div>
+    <div class="inline"><input id="src-new" data-keep placeholder="Nova origem"><button class="btn pri" data-act="src-add">Adicionar</button></div>`;
+  }
+  sc.hidden=false;
+  if(sig===lastSig&&!el.hidden)return;
+  lastSig=sig;
+  const keep={};el.querySelectorAll('[data-keep]').forEach(i=>keep[i.id]=i.value);
+  const act=document.activeElement&&el.contains(document.activeElement)?document.activeElement.id:null;
+  const sameKind=el.dataset.k===p.kind+(p.id||'');
+  el.innerHTML=html;el.hidden=false;el.dataset.k=p.kind+(p.id||'');
+  if(sameKind)Object.keys(keep).forEach(id=>{const i=document.getElementById(id);if(i&&i.value!==keep[id])i.value=keep[id]});
+  if(act){const i=document.getElementById(act);if(i)i.focus()}
+  else if(!sameKind){const f=el.querySelector('input,select,textarea');if(f&&p.kind!=='lead')f.focus()}
+}
+function openPanel(p){ui.panel=p;msg='';confirmDel=false;lastSig='';$('#panel').dataset.k='';drawPanel()}
+function closePanel(){ui.panel=null;msg='';confirmDel=false;drawPanel()}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const tab=t.closest('.tab');if(tab){ui.view=tab.dataset.view;try{localStorage.setItem('funil-view',ui.view)}catch(x){}draw();return}
+  if(t.id==='scrim'){closePanel();return}
+  const op=t.closest('[data-open]');if(op){openPanel({kind:'lead',id:op.dataset.open});return}
+  const b=t.closest('[data-act]');
+  if(!b){
+    const c=t.closest('.card,tbody tr');
+    if(c&&c.dataset.id&&!t.closest('input,button'))openPanel({kind:'lead',id:c.dataset.id});
+    return;
+  }
+  const a=b.dataset.act,P=ui.panel;
+  if(a==='seed')A.seed();
+  else if(a==='new')openPanel({kind:'new',stageId:b.dataset.stage});
+  else if(a==='stages'||a==='sources')openPanel({kind:a});
+  else if(a==='close')closePanel();
+  else if(a==='save-new'){
+    const name=$('#n-name').value.trim();
+    if(!name){msg='Informe o nome do lead.';lastSig='';drawPanel();return}
+    A.addLead({name,company:$('#n-co').value.trim(),contact:$('#n-ct').value.trim(),source:$('#n-src').value,stageId:$('#n-stg').value});
+    closePanel();
+  }
+  else if(a==='note-add'){const i=$('#note-in'),v=i.value.trim();if(!v)return;i.value='';A.addNote(P.id,v)}
+  else if(a==='task-add'){const i=$('#task-in'),d=$('#task-d').value,v=i.value.trim();if(!v||!d){toast('Informe o follow-up e a data.');return}i.value='';A.addTask(P.id,v,d)}
+  else if(a==='task-del')A.delTask(P.id,b.dataset.tid);
+  else if(a==='lead-del'){confirmDel=true;lastSig='';drawPanel()}
+  else if(a==='lead-del-cancel'){confirmDel=false;lastSig='';drawPanel()}
+  else if(a==='lead-del-ok'){const id=P.id;closePanel();A.delLead(id)}
+  else if(a==='st-add'){const i=$('#st-new'),v=i.value.trim();if(!v){msg='Dê um nome ao estágio.';lastSig='';drawPanel();return}i.value='';msg='';A.addStage(v)}
+  else if(a==='st-up'||a==='st-down'){
+    const st=S.stages.slice().sort(byPos),i=st.findIndex(s=>s.id===b.dataset.id),j=a==='st-up'?i-1:i+1;
+    if(st[j]){
+      const x={...st[i]},y={...st[j]};
+      if(x.pos===y.pos){y.pos=x.pos+(a==='st-up'?1:-1)}
+      A.swapStages(x,y);
+    }
+  }
+  else if(a==='st-del'){
+    const n=S.leads.filter(l=>l.stageId===b.dataset.id).length;
+    if(n){msg=`Esse estágio tem ${n} lead${n>1?'s':''}. Mova-os para outro estágio antes de excluir.`;lastSig='';drawPanel();return}
+    msg='';A.delStage(b.dataset.id);
+  }
+  else if(a==='src-add'){const i=$('#src-new'),v=i.value.trim();if(!v||S.sources.some(s=>s.name.toLowerCase()===v.toLowerCase()))return;i.value='';A.addSource(v)}
+  else if(a==='src-del'){const s=S.sources.find(x=>x.id===b.dataset.id);if(s)A.delSource(s)}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.f&&ui.panel){
+    const f=t.dataset.f;let v=t.value;
+    if(f==='name'){v=v.trim();if(!v){draw();return}}
+    const l=leadById(ui.panel.id);if(!l)return;
+    if(f==='stageId'){const list=S.leads.filter(x=>x.stageId===v);const pos=(list.length?Math.max(...list.map(x=>x.pos||0)):0)+1000;A.patchLead(l.id,{stageId:v,pos})}
+    else A.patchLead(l.id,{[f]:v.trim?v.trim():v});
+  }
+  else if(t.dataset.task){A.toggleTask(t.dataset.lead,t.dataset.task,t.checked)}
+  else if(t.dataset.sn){const v=t.value.trim();if(v)A.patchStage(t.dataset.sn,{name:v});else draw()}
+  else if(t.dataset.sc){A.patchStage(t.dataset.sc,{color:t.value})}
+});
+$('#q').addEventListener('input',e=>{ui.q=e.target.value;draw()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.panel)closePanel()});
+
+/* arrastar e soltar */
+const main=$('#main');
+main.addEventListener('dragstart',e=>{const c=e.target.closest('.card');if(!c||!canWrite)return;drag=c.dataset.id;c.classList.add('drag');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',drag)}catch(x){}});
+main.addEventListener('dragend',()=>{drag=null;if(dirty)draw();else document.querySelectorAll('.drag,.over').forEach(x=>x.classList.remove('drag','over'))});
+main.addEventListener('dragover',e=>{const c=e.target.closest('.col');if(!c||!drag)return;e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x!==c&&x.classList.remove('over'));c.classList.add('over')});
+main.addEventListener('drop',e=>{
+  const c=e.target.closest('.col');if(!c||!drag)return;e.preventDefault();
+  const id=drag,stageId=c.dataset.stage;drag=null;
+  const cards=[...c.querySelectorAll('.card')].filter(x=>x.dataset.id!==id);
+  const bef=cards.find(x=>{const r=x.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+  const list=S.leads.filter(l=>l.stageId===stageId&&l.id!==id).sort(byPos);
+  let pos;
+  if(bef){const i=list.findIndex(l=>l.id===bef.dataset.id);const nx=list[i].pos||0;const pv=i>0?(list[i-1].pos||0):nx-2000;pos=(pv+nx)/2}
+  else pos=(list.length?(list[list.length-1].pos||0):0)+1000;
+  A.patchLead(id,{stageId,pos});
+  dirty=false;draw();
+});
+
+/* ---------- inicialização ---------- */
+(async()=>{
+  const cl=window.claude;
+  if(!cl||!cl.use){$('#stats').textContent='Abra esta página pelo claude.ai para usar o CRM.';return}
+  let user=null;
+  try{user=await cl.use('user')}catch(e){}
+  try{db=await cl.use('db')}catch(e){}
+  if(!db){$('#stats').textContent='Entre na sua conta para abrir o CRM.';return}
+  if(user&&user.can){try{if((await user.can('data.write'))===false)canWrite=false}catch(e){}}
+  const sub=(name,key)=>col(name).onSnapshot(s=>{S[key]=s.docs.map(d=>({id:d.id,...d.data()}));S.ready[key]=true;render()},e=>{toast(errText(e))});
+  sub('stages','stages');sub('sources','sources');sub('leads','leads');
+})();
+</script>

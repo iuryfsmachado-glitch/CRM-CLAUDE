@@ -1,0 +1,26 @@
+# Segredos e credenciais: nunca versionar
+.env
+.env.*
+!.env.local.example
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+credentials*.json
+secrets*.json
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Dependências e builds
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local
+.claude/
+.DS_Store
+npm-debug.log*
